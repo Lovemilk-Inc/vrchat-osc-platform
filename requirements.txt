@@ -1,0 +1,6 @@
+python-osc
+watchdog
+loguru
+requests
+pip
+contextvars
