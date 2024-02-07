@@ -1,7 +1,7 @@
 # vrchat[^vrc]-osc-platform
 
 > [!Important]
-> 本项目仍在 Beta 阶段, 切勿再生产环境使用
+> 本项目仍在 Beta 阶段, 切勿在生产环境使用
 
 ## 项目简介
 本项目为 [VRChat OSC](https://docs.vrchat.com/docs/osc-overview) 服务提供了一个框架, 可以以插件的方式调用 OSC API
