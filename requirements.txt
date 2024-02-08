@@ -2,5 +2,4 @@ python-osc
 watchdog
 loguru
 requests
-pip
-contextvars
+jstimer4py
