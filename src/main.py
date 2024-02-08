@@ -1,11 +1,11 @@
 import sys
+import time
 import inspect
 from pathlib import Path
 from pythonosc import udp_client
 from importlib import import_module
 from threading import Timer
 
-from settimeout import set_timeout
 from log import logger, error_logger
 from client import VRChatClient
 from hmr import hmr
@@ -13,6 +13,7 @@ from hmr import hmr
 PLUGINS_PATH = Path('./plugins/')
 HOST = '127.0.0.1'
 PORT = 9000
+LOOP_INTERVAL = 0.5
 
 sys.path.append('.')
 
@@ -22,6 +23,9 @@ def loop_module(module, vrchat_client: VRChatClient):
         return
 
     loop = module.loop
+    params_length = len(inspect.signature(loop).parameters)
+
+    # match params_length:
 
     Timer(0, lambda: loop(vrchat_client)).start()
 
@@ -52,7 +56,7 @@ def apply_module(module, vrchat_client: VRChatClient, host: str, port: int):
         except Exception:
             error_logger.warning(f'failed to apply module: {module.__name__}')
 
-    set_timeout(_apply, 0)  # not blocking
+    Timer(0, _apply).start()  # not blocking
 
 
 def main(host: str, port: int):
@@ -87,8 +91,15 @@ def main(host: str, port: int):
 
     try:
         while True:
+            start = time.time()
             for module in plugins:
                 loop_module(module, vrchat_client)
+
+            sleep_time = LOOP_INTERVAL - (time.time() - start)
+            if sleep_time <= 0:
+                continue
+
+            time.sleep(sleep_time)
     except KeyboardInterrupt:
         return
 

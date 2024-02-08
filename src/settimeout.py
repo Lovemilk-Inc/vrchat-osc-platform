@@ -1,6 +1,7 @@
 # All rights reserved. Cyan Changes (c) 2024
 # Licensed to lovemilk-Inc@proton.me under Apache-2.0
 
+import sys
 import asyncio
 import atexit
 import datetime
@@ -18,9 +19,9 @@ from itertools import count
 
 __all__ = [
     'set_timeout',
-    'set_interval',
+    # 'set_interval',
     'clear_timeout',
-    'clear_interval',
+    # 'clear_interval',
     'SchedulerThread',
     'WorkerThread',
     'shutdown'
@@ -98,7 +99,7 @@ def _id_of(timer: Timer) -> int:
 
 class SchedulerThread(Thread):
     def __init__(self, workers_cnt=WORKERS_NUM):
-        super().__init__()
+        super().__init__(name=type(self).__name__, daemon=True)
         self.fut = Future()
         self._tasks: dict[int, Task] = {}
         self._counter = count(0)
@@ -125,9 +126,9 @@ class SchedulerThread(Thread):
     async def _schedule_task(self, at: datetime.datetime, task: ScheduledTask):
         assert task.id is not None
         while not self.fut.done():
-            await asyncio.sleep((datetime.datetime.now() - at).total_seconds())
+            await asyncio.sleep((at - datetime.datetime.now()).total_seconds())
             await self.pending_tasks.put(task)
-            if not task._interval:
+            if not task.is_interval:
                 break
 
     def _task(self, i: int, coro: Coroutine, loop: asyncio.AbstractEventLoop):
@@ -158,7 +159,11 @@ class SchedulerThread(Thread):
     def stop(self):
         self.stop_event.set()
         self.fut.set_result(None)
-        self._get_loop().stop()
+
+        loop = self._get_loop()
+
+        loop.stop()
+        loop.close()
 
     def join(self, timeout=None):
         super().join(timeout)
@@ -166,7 +171,10 @@ class SchedulerThread(Thread):
             worker.join()
 
     def run(self):
-        run(self.main())
+        try:
+            run(self.main())
+        except RuntimeError:
+            pass
 
 
 def call_task(task: ScheduledTask):
@@ -178,7 +186,7 @@ def call_task(task: ScheduledTask):
 
 class WorkerThread(Thread):
     def __init__(self, scheduler: SchedulerThread, stop_event: threading.Event):
-        super().__init__()
+        super().__init__(name=type(self).__name__, daemon=True)
         self.scheduler = scheduler
         self.stop_event = stop_event
 
@@ -209,7 +217,7 @@ class WorkerThread(Thread):
     def run(self):
         try:
             run(self.wait_and_main())
-        finally:
+        except RuntimeError:
             pass
 
 
@@ -234,24 +242,25 @@ def clear_timeout(timer: Timer, __scheduler: SchedulerThread = _scheduler) -> No
     sc.cancelled_ids.put_nowait(_id)
 
 
-def set_interval(func: Callable, timeout: float, __scheduler: SchedulerThread = _scheduler, *args, **kwargs) -> Timer:
-    sc = __scheduler
-    task = ScheduledTask(
-        func=func,
-        args=args, kwargs=kwargs,
-        call_at=datetime.datetime.now() + datetime.timedelta(seconds=timeout),
-        _interval=True
-    )
-    sc.add_task(task)
-    return Timer(task.id, task)
+# def set_interval(func: Callable, timeout: float, __scheduler: SchedulerThread = _scheduler, *args, **kwargs) -> Timer:
+#     sc = __scheduler
+#     task = ScheduledTask(
+#         func=func,
+#         args=args, kwargs=kwargs,
+#         call_at=datetime.datetime.now() + datetime.timedelta(seconds=timeout),
+#         _interval=True
+#     )
+#     sc.add_task(task)
+#     return Timer(task.id, task)
 
 
 def shutdown(__scheduler: SchedulerThread = _scheduler) -> None:
     sc = __scheduler
     sc.stop()
     sc.join()
+    print(__scheduler)
 
 
 atexit.register(partial(shutdown))
 
-clear_interval = clear_timeout
+# clear_interval = clear_timeout

@@ -20,7 +20,7 @@ class VRChatClient:
 
     def send_message(self, path: str, value: str | bytes | bool | int | float | tuple[int, int, int, int] | list):
         """
-        send any  message to OSC server
+        send any message to OSC server
         :param path: path to endpoint
         :param value: content in any supported type
         :return: None
