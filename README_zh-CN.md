@@ -52,4 +52,4 @@
    ```
 
 ## 版权信息
-[^vrc]: VRChat 是 VRChat 游戏被注册的名称和/或商标, 其官网为: <https://vrchat.com>
+[^vrc]: [VRChat](https://vrchat.com) 为 VRChat Inc. 的商标
