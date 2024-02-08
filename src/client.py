@@ -2,7 +2,7 @@ from pythonosc.udp_client import SimpleUDPClient
 from time import sleep
 from enum import StrEnum
 
-from settimeout import set_timeout
+from jstimer4py import set_timeout
 
 __all__ = (
     'VRChatClient',
