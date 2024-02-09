@@ -81,11 +81,11 @@ def main(host: str, port: int):
         apply_module(module, vrchat_client, host, port)
 
         # Watchdog is not supported for Micro$oft Windows!!!
-        # if sys.platform != 'win32':  # FUCK M$ WINDOWS
-        module = hmr(module, lambda _, reloaded_module: (
-            apply_module(reloaded_module, vrchat_client, host, port),
-            logger.debug(f'hmr reload: {reloaded_module.__name__}')
-        ))
+        if sys.platform != 'win32':  # FUCK M$ WINDOWS
+            module = hmr(module, lambda _, reloaded_module: (
+                apply_module(reloaded_module, vrchat_client, host, port),
+                logger.debug(f'hmr reload: {reloaded_module.__name__}')
+            ))
 
         plugins.append(module)
 
