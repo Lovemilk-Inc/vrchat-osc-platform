@@ -30,8 +30,8 @@ class HMRHandler(FileSystemEventHandler):
 
 
 def hmr(module: ModuleType, callback: CallbackType):
-    module_file = str(Path(module.__file__))
-    logger.debug(f'hmr add: {module}: {module_file}')
+    module_dir = str(Path(module.__file__).absolute().parent)
+    logger.debug(f'hmr add: {module}: {module_dir}')
 
     observer = Observer()
 
@@ -40,7 +40,7 @@ def hmr(module: ModuleType, callback: CallbackType):
         "__getattribute__": lambda self, p: getattr(type(self).__module__, p)
     })
 
-    observer.schedule(HMRHandler(module, hmr_obj, callback), module_file)
+    observer.schedule(HMRHandler(module, hmr_obj, callback), module_dir, recursive=True)
     observer.start()
-    atexit.register(observer.stop)
+    # atexit.register(observer.stop)
     return hmr_obj()

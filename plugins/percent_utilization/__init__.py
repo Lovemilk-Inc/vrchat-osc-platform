@@ -7,8 +7,6 @@ from datetime import datetime
 from log import logger, error_logger
 from client import VRChatClient, SpecialChars
 
-from jstimer4py import set_interval
-
 PER_CPU = False  # 将每个核心占用率加起来, 类似 *nix 显示方式
 
 UPDATE_INTERVAL = 1  # 更新间隔, 秒, 最好不要低于 1
@@ -61,4 +59,3 @@ def apply():
             'on Windows operating system'
             # 'FUCK M$ WINDOWS'
         )
-    set_interval(loop, 3)

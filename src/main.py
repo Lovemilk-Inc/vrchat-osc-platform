@@ -4,7 +4,7 @@ import inspect
 from pathlib import Path
 from pythonosc import udp_client
 from importlib import import_module
-from threading import Timer
+from jstimer4py import set_timeout
 
 from log import logger, error_logger
 from client import VRChatClient
@@ -27,7 +27,7 @@ def loop_module(module, vrchat_client: VRChatClient):
 
     # match params_length:
 
-    Timer(0, lambda: loop(vrchat_client)).start()
+    set_timeout(lambda: loop(vrchat_client), 0)
 
 
 def apply_module(module, vrchat_client: VRChatClient, host: str, port: int):
@@ -56,7 +56,7 @@ def apply_module(module, vrchat_client: VRChatClient, host: str, port: int):
         except Exception:
             error_logger.warning(f'failed to apply module: {module.__name__}')
 
-    Timer(0, _apply).start()  # not blocking
+    set_timeout(_apply, 0)  # not blocking
 
 
 def main(host: str, port: int):
@@ -81,11 +81,11 @@ def main(host: str, port: int):
         apply_module(module, vrchat_client, host, port)
 
         # Watchdog is not supported for Micro$oft Windows!!!
-        if sys.platform != 'win32':  # FUCK M$ WINDOWS
-            module = hmr(module, lambda _, reloaded_module: (
-                apply_module(reloaded_module, vrchat_client, host, port),
-                logger.debug(f'hmr reload: {reloaded_module.__name__}')
-            ))
+        # if sys.platform != 'win32':  # FUCK M$ WINDOWS
+        module = hmr(module, lambda _, reloaded_module: (
+            apply_module(reloaded_module, vrchat_client, host, port),
+            logger.debug(f'hmr reload: {reloaded_module.__name__}')
+        ))
 
         plugins.append(module)
 
